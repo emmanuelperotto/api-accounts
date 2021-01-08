@@ -1,6 +1,7 @@
 package main
 
 import (
+	"accounts/config"
 	"accounts/middlewares"
 	"accounts/routes"
 	"github.com/gorilla/mux"
@@ -10,11 +11,18 @@ import (
 )
 
 func main() {
+	//SETUP DB
+	if err := config.SetupDB(); err != nil {
+		log.Fatal("Error setting the DB up => ", err)
+	}
+
+	//SETUP ROUTES
 	router := mux.NewRouter()
 	router.Use(middlewares.Logging)
 
 	router.HandleFunc("/accounts", routes.CreateAccount).Methods("POST")
 
+	//START SERVER
 	address := ":3000"
 	server := http.Server{
 		Addr:         address,
@@ -24,9 +32,8 @@ func main() {
 	}
 
 	log.Println("Running server on port ", address)
-	err := server.ListenAndServe()
 
-	if err != nil {
+	if err := server.ListenAndServe(); err != nil {
 		log.Fatal("Error running server: ", err)
 	}
 }

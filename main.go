@@ -1,7 +1,7 @@
 package main
 
 import (
-	"accounts/config"
+	"accounts/infra"
 	"accounts/middlewares"
 	"accounts/routes"
 	"github.com/gorilla/mux"
@@ -12,7 +12,7 @@ import (
 
 func main() {
 	//SETUP DB
-	if err := config.SetupDB(); err != nil {
+	if err := infra.SetupDB(); err != nil {
 		log.Fatal("Error setting the DB up => ", err)
 	}
 

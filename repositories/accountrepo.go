@@ -1,28 +1,34 @@
 package repositories
 
 import (
-	"accounts/config"
 	"accounts/entities"
+	"accounts/infra"
 	"context"
-	"database/sql"
 )
 
-type accountRepo struct {
-	DB *sql.DB
-}
+type accountRepo struct {}
 
 type AccountCreator interface {
-	Create(account entities.Account) (sql.Result, error)
+	Create(account entities.Account) (entities.Account, error)
 }
 
-func (ar accountRepo) Create(account entities.Account) (sql.Result, error) {
+func (ar accountRepo) Create(account entities.Account) (entities.Account, error) {
 	ctx := context.Background()
-	return config.DB.ExecContext(ctx,
+	result, err := infra.DB.ExecContext(ctx,
 		"INSERT INTO Accounts (Code, Agency) VALUES (?, ?)",
 		account.Code,
 		account.Agency)
+
+	if err != nil {
+		return account, err
+	}
+
+	id, _ := result.LastInsertId()
+	account.ID = id
+
+	return account, nil
 }
 
 var (
-	AccountRepo = accountRepo{DB: config.DB}
+	AccountRepo = accountRepo{}
 )

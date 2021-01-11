@@ -1,19 +1,13 @@
 package usecases
 
 import (
-	"accounts/config"
 	"accounts/entities"
-	"context"
+	"accounts/repositories"
 )
 
 func CreateAccount(account entities.Account) (entities.Account, error) {
 	//TODO: add validation to avoid empty agency
-	//FIXME: Extract all SQL logic to repositories
-	ctx := context.Background()
-	result, err := config.DB.ExecContext(ctx,
-		"INSERT INTO Accounts (Code, Agency) VALUES (?, ?)",
-		account.Code,
-		account.Agency)
+	result, err := repositories.AccountRepo.Create(account)
 
 	if err != nil {
 		return account, err

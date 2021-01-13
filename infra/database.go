@@ -3,7 +3,9 @@ package infra
 import (
 	"context"
 	"database/sql"
+	"fmt"
 	_ "github.com/go-sql-driver/mysql"
+	"os"
 	"time"
 )
 
@@ -13,7 +15,12 @@ var (
 
 func SetupDB() error {
 	var err error
-	DB, err = sql.Open("mysql", "emmanuelperotto:secret123@/api_accounts")
+	driver := os.Getenv("DB_DRIVER")
+	user := os.Getenv("DB_USER")
+	password := os.Getenv("DB_PASSWORD")
+	database := os.Getenv("DB_NAME")
+
+	DB, err = sql.Open(driver, fmt.Sprintf("%s:%s@/%s", user, password, database))
 
 	if err != nil {
 		return err

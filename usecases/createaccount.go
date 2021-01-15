@@ -2,8 +2,10 @@ package usecases
 
 import (
 	"accounts/entities"
+	"accounts/infra"
 	"accounts/repositories"
 	"errors"
+	"log"
 )
 
 func CreateAccount(account entities.Account) (entities.Account, error) {
@@ -16,5 +18,22 @@ func CreateAccount(account entities.Account) (entities.Account, error) {
 		return account, errors.New("agency must have 4 digits")
 	}
 
-	return repositories.AccountRepo.Create(account)
+	account, err := repositories.AccountRepo.Create(account)
+
+	if err != nil {
+		log.Println("[CreateAccount Error]", err)
+		return account, err
+	}
+
+
+	go func(acc entities.Account) {
+		log.Println("Publishing AccountCreated event")
+		err := infra.PublishAccountCreatedEvent(acc)
+		if err != nil {
+			log.Println("[Publish Error]", err)
+		}
+	}(account)
+
+	log.Println("Account Created")
+	return account, nil
 }

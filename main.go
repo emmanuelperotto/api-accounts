@@ -1,20 +1,13 @@
 package main
 
 import (
-	"accounts/entities"
 	"accounts/infra"
 	"accounts/middlewares"
 	"accounts/routes"
-	"fmt"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/sns"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"log"
 	"net/http"
-	"os"
-	"strconv"
 	"time"
 )
 
@@ -29,44 +22,8 @@ func main() {
 		log.Fatal("[DB Setup Error]", err)
 	}
 
-	//FIXME: extract to infra package
 	//SETUP AWS-SDK
-	sess := session.Must(session.NewSessionWithOptions(session.Options{
-		Profile:           os.Getenv("AWS_PROFILE"),
-		SharedConfigState: session.SharedConfigEnable,
-	}))
-
-	snsClient := sns.New(sess)
-
-	acc := entities.Account{
-		ID:          10,
-		Code:        "41325",
-		Agency:      "0001",
-		AccessToken: "",
-	}
-	input := sns.PublishInput{
-		Message: aws.String("AccountCreated"),
-		MessageAttributes: map[string]*sns.MessageAttributeValue{
-			"ID": {
-				DataType:    aws.String("String"),
-				StringValue: aws.String(strconv.FormatInt(acc.ID, 10)),
-			},
-			"Code": {
-				DataType:    aws.String("String"),
-				StringValue: aws.String(acc.Code),
-			},
-			"Agency": {
-				DataType:    aws.String("String"),
-				StringValue: aws.String(acc.Agency),
-			},
-		},
-		TopicArn: aws.String(os.Getenv("TOPIC_ARN")),
-	}
-	output, err := snsClient.Publish(&input)
-	if err != nil {
-		log.Println("[Publish error]", err)
-	}
-	fmt.Println(output)
+	infra.SetupMessagingService()
 
 	//SETUP ROUTES
 	router := mux.NewRouter()
